@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 个人形象分析 · 穿搭 & 妆容全案</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(160deg, #fce4ec 0%, #f3e5f5 40%, #e8eaf6 100%);
+    min-height: 100vh;
+    display: flex; justify-content: center;
+    padding: 20px 12px;
+    color: #3a2a3e;
+  }
+  .wrap { width: 100%; max-width: 540px; }
+  .card { background: #fff; border-radius: 20px; padding: 28px 22px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08); margin-bottom: 16px; }
+  h1 { font-size: 23px; text-align: center; margin-bottom: 4px; }
+  .sub { text-align: center; color: #8a7a90; font-size: 13px; margin-bottom: 22px; }
+  .field { margin-bottom: 18px; }
+  .field > label { display: block; font-size: 15px; font-weight: 600; margin-bottom: 9px; }
+  .hint { display: block; font-size: 12px; color: #a89aa8; font-weight: 400; margin-top: 2px; }
+  .row { display: flex; gap: 12px; }
+  .row .field { flex: 1; }
+  input[type=number] {
+    width: 100%; padding: 12px; font-size: 15px; border: 2px solid #ede4f0;
+    border-radius: 12px; outline: none; transition: border .15s;
+  }
+  input[type=number]:focus { border-color: #c9a7d9; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 9px 14px; border: 2px solid #ede4f0; border-radius: 20px;
+    cursor: pointer; font-size: 14px; background: #faf7fb; transition: all .15s;
+  }
+  .chip:hover { border-color: #c9a7d9; }
+  .chip.on { background: linear-gradient(90deg,#e91e63,#9c27b0); color: #fff; border-color: transparent; }
+  .btn { display: block; width: 100%; text-align: center;
+    background: linear-gradient(90deg,#e91e63,#9c27b0); color: #fff;
+    border: none; border-radius: 14px; padding: 15px; font-size: 16px;
+    font-weight: 600; cursor: pointer; margin-top: 6px; font-family: inherit; }
+  .btn:active { opacity: .9; }
+  .hidden { display: none; }
+  /* result */
+  .r-head { text-align: center; margin-bottom: 18px; }
+  .r-title { font-size: 26px; font-weight: 700; color: #9c27b0; }
+  .r-tag { color: #c2185b; font-size: 15px; margin-top: 4px; }
+  .sec { border-top: 1px dashed #eee0f0; padding: 18px 0; }
+  .sec h3 { font-size: 16px; margin-bottom: 10px; color: #c2185b; }
+  .sec p, .sec li { font-size: 14px; line-height: 1.85; color: #5a4a5e; }
+  .sec ul { padding-left: 18px; }
+  .sec .do { color: #7a5a00; }
+  .sec .dont { color: #c0392b; }
+  .badge { display: inline-block; background: #f5e9f9; color: #9c27b0; border-radius: 8px;
+    padding: 2px 8px; font-size: 12px; margin-right: 4px; }
+  .box { background: #fbf5ee; border-radius: 12px; padding: 12px 14px; margin: 8px 0; }
+  .box.good { background: #eefaf0; }
+  .box.bad { background: #fdf0ef; }
+  .box > b { font-size: 13px; }
+  .formula { background: linear-gradient(90deg,#fdf2f8,#f3e8ff); border-radius: 12px;
+    padding: 12px 14px; margin: 8px 0; font-weight: 600; color: #7b2d8b; font-size: 14px; }
+  .disclaimer { font-size: 11px; color: #b0a0b0; text-align: center; margin-top: 18px; line-height: 1.7; }
+  .restart { background: none; border: 2px solid #c9a7d9; color: #9c27b0; border-radius: 14px;
+    width: 100%; padding: 13px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 14px; font-family: inherit; }
+  .share-tip { text-align: center; font-size: 13px; color: #9c27b0; margin-top: 10px; font-weight: 600; }
+  /* 付费解锁 */
+  .lock-wrap { position: relative; }
+  .lock-mask {
+    position: relative; border: 2px dashed #c9a7d9; border-radius: 14px;
+    padding: 40px 18px; text-align: center; background: #faf7fb; margin: 14px 0;
+  }
+  .lock-mask .lock-icon { font-size: 40px; }
+  .lock-mask .lock-t1 { font-size: 17px; font-weight: 700; color: #7b2d8b; margin: 10px 0 6px; }
+  .lock-mask .lock-t2 { font-size: 13px; color: #8a7a90; line-height: 1.7; }
+  .lock-mask input {
+    width: 70%; padding: 11px; font-size: 15px; border: 2px solid #c9a7d9;
+    border-radius: 10px; text-align: center; margin: 12px 0 8px; outline: none;
+    letter-spacing: 2px;
+  }
+  .lock-mask .unlock-btn {
+    display: inline-block; background: linear-gradient(90deg,#e91e63,#9c27b0); color: #fff;
+    border: none; border-radius: 12px; padding: 11px 24px; font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  .locked-note { font-size: 12px; color: #b0a0b0; text-align: center; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="form">
+    <h1>AI 个人形象分析</h1>
+    <div class="sub">输入基础信息，生成专属穿搭 & 形象全案</div>
+
+    <div class="field">
+      <label>你的性别</label>
+      <div class="chips" id="gender"></div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>身高 (cm)</label>
+        <input type="number" id="height" placeholder="如 165">
+      </div>
+      <div class="field">
+        <label>体重 (kg)</label>
+        <input type="number" id="weight" placeholder="如 52">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>你的脸型</label>
+      <div class="chips" id="face"></div>
+    </div>
+    <div class="field">
+      <label>你的身型 <span class="hint">看肩宽/腰/臀的比例</span></label>
+      <div class="chips" id="body"></div>
+    </div>
+    <div class="field">
+      <label>腿型 <span class="hint">自然站立时，膝盖脚踝能否并拢</span></label>
+      <div class="chips" id="leg"></div>
+    </div>
+    <div class="field">
+      <label>肩型</label>
+      <div class="chips" id="shoulder"></div>
+    </div>
+    <div class="field">
+      <label>肤色基调</label>
+      <div class="chips" id="skin"></div>
+    </div>
+    <div class="field">
+      <label>想要的风格方向（可多选）</label>
+      <div class="chips" id="style"></div>
+    </div>
+    <div class="field">
+      <label>日常场合（多选）</label>
+      <div class="chips" id="scene"></div>
+    </div>
+
+    <button class="btn" onclick="go()">生成我的形象分析</button>
+    <div class="disclaimer">仅供娱乐参考 · 不构成专业建议</div>
+  </div>
+
+  <div class="card hidden" id="result"></div>
+</div>
+
+<script>
+  // 付费解锁码：改动这里即换码（用户走私信获取）
+  const UNLOCK_CODE = 'STYLE88';
+
+  const DATA = {
+    gender: ['女性','男性'],
+    face: ['圆脸','方脸','鹅蛋脸','长脸','心形脸','菱形脸'],
+    body: ['沙漏型（肩臀同宽腰细）','梨形（下半身偏丰满）','苹果型（腰部偏圆）','H型（肩腰臀接近）','倒三角（肩宽臀窄）'],
+    leg: ['标准腿（能并拢）','O型腿（膝盖并拢脚踝分开）','X型腿（膝盖分开脚踝并拢）','XO型腿（大腿间有空隙）'],
+    shoulder: ['窄肩','标准肩','宽肩'],
+    skin: ['暖皮（偏黄）','冷皮（偏白偏粉）','中性皮（介于两者）'],
+    style: ['清冷风','甜酷风','古典风','少年感','温柔系','慵懒风','成熟知性','元气风'],
+    scene: ['通勤上班','约会','日常休闲','逛街拍照','正式场合']
+  };
+
+  const FACE_ADVICE = {
+    '圆脸':   { eyebrow:'自然微挑眉（提升脸部纵向感）', hair:'头顶增蓬松度、避免厚重齐刘海', collar:'V领/方领/深U领/尖领拉长线条', collarAvoid:'圆领、高圆领、紧贴脖子的领口', ear:'长条形/流苏垂坠耳饰', star:'赵丽颖、谭松韵' },
+    '方脸':   { eyebrow:'柔和弯眉（弱化棱角）', hair:'中长卷发、侧分刘海柔和下颌角', collar:'圆领/一字领/斜肩/大领口', collarAvoid:'方领、硬挺的直领', ear:'圆形/弧形/水滴形耳饰', star:'舒淇、刘雯' },
+    '鹅蛋脸': { eyebrow:'标准眉，几乎所有眉型都适合', hair:'百搭，可大胆尝试各种发型', collar:'几乎任何领型都好看', collarAvoid:'基本无雷区', ear:'基本百搭', star:'刘亦菲、迪丽热巴' },
+    '长脸':   { eyebrow:'平直眉（横向拉宽脸型）', hair:'留刘海、增加两侧蓬松度', collar:'高领/船领/横线感领型', collarAvoid:'深V领、过长的纵向线条', ear:'圆形/横向/扣式耳饰', star:'马思纯、倪妮' },
+    '心形脸': { eyebrow:'柔和短眉尾', hair:'下巴处有层次、内扣，刘海可选', collar:'圆领/一字领/横领平衡宽额头', collarAvoid:'尖领、过深的V领', ear:'水滴形/短坠/耳钉', star:'杨幂、宋慧乔' },
+    '菱形脸': { eyebrow:'自然弧度眉', hair:'增加两侧发量、柔和颧骨，微卷更佳', collar:'圆领/宽领口/翻领', collarAvoid:'紧贴颧骨的直领', ear:'圆形/短款/耳钉', star:'刘诗诗、倪妮' }
+  };
+
+  const FACE_STAR_M = {
+    '圆脸':   '刘昊然、王俊凯', '方脸':   '张震、胡军',
+    '鹅蛋脸': '肖战、杨洋',     '长脸':   '易烊千玺、朱一龙',
+    '心形脸': '王一博、吴磊',   '菱形脸': '陈伟霆、黄景瑜'
+  };
+
+  const BODY_ADVICE = {
+    '沙漏型（肩臀同宽腰细）': { tip:'天生优势，重点突出腰线', do:'收腰裙、高腰裤、裹身裙、腰带强调腰', avoid:'宽松直筒（淹没曲线）、过长的上衣盖住腰', formula:'收腰上衣 + 高腰下装 = 突出X曲线' },
+    '梨形（下半身偏丰满）': { tip:'视觉上移，平衡上下比例', do:'A字裙、阔腿裤、深色下装、上半身加亮色/垫肩', avoid:'紧身裤、包臀裙、浅色/紧身下装', formula:'亮色/有设计感上衣 + 深色A字下装' },
+    '苹果型（腰部偏圆）': { tip:'弱化腰腹，露出纤细四肢', do:'V领、直筒裙、高腰+遮腹的垂感上衣、露腿', avoid:'紧身包腹、粗腰带、密集横条纹', formula:'V领垂感上衣 + 直筒或A字下装' },
+    'H型（肩腰臀接近）': { tip:'制造曲线，营造腰线错觉', do:'收腰、腰带、褶皱、A字裙、荷叶边增加维度', avoid:'完全直筒、H型连衣裙（更显直）', formula:'收腰或有腰节设计 + 下摆外扩' },
+    '倒三角（肩宽臀窄）': { tip:'弱化肩部，增加下半身体量', do:'V领/插肩袖、A字裙/阔腿裤/百褶、深色上衣浅色下装', avoid:'垫肩、泡泡袖、紧身上衣', formula:'深色V领上衣 + 浅色/有量感下装' }
+  };
+
+  const LEG_ADVICE = {
+    '标准腿（能并拢）': { tip:'基本无限制，放心露出腿部线条', do:'短裙短裤、紧身裤、任何裤型都友好', avoid:'基本无雷区' },
+    'O型腿（膝盖并拢脚踝分开）': { tip:'遮膝盖，选有量感的裤型', do:'直筒裤、阔腿裤、喇叭裤、长裙、及膝裙', avoid:'紧身裤、超短裙、短裤（凸显弯曲）' },
+    'X型腿（膝盖分开脚踝并拢）': { tip:'遮膝盖，裤脚可收', do:'直筒裤、微喇裤、长裙、中长裙', avoid:'紧身裤、超短裙' },
+    'XO型腿（大腿间有空隙）': { tip:'避免凸显大腿，选宽松下装', do:'阔腿裤、A字裙、长裙、直筒裤', avoid:'紧身牛仔裤、包臀裙' }
+  };
+
+  const SHOULDER_ADVICE = {
+    '窄肩': { tip:'增加肩部视觉宽度，平衡比例', do:'泡泡袖、垫肩、横条纹、一字领、浅色上衣', avoid:'深色紧身上衣、过窄的肩带' },
+    '标准肩': { tip:'基本百搭，随意发挥', do:'任何肩型设计都可尝试', avoid:'基本无雷区' },
+    '宽肩': { tip:'弱化肩宽，视线下移', do:'V领、插肩袖、落肩袖、深色上衣', avoid:'垫肩、泡泡袖、一字领、浅色横条纹上衣' }
+  };
+
+  // 男性版（身型/腿型/肩型建议独立一套）
+  const BODY_ADVICE_M = {
+    '沙漏型（肩臀同宽腰细）': { tip:'比例较匀称，突出挺拔感', do:'修身剪裁、衬衫塞进裤腰、合体西装突出比例', avoid:'过度宽松（显拖沓）', formula:'合体上衣 + 收腰裤装 = 挺拔利落' },
+    '梨形（下半身偏丰满）': { tip:'平衡上下比例，细化腿部线条', do:'直筒/锥形裤、深色下装、上半身加层次或亮色', avoid:'紧身裤、浅色紧身下装', formula:'有层次上衣 + 深色直筒/锥形裤' },
+    '苹果型（腰部偏圆）': { tip:'弱化腰腹，突出肩部与腿部', do:'V领、直筒外套、深色上衣、合身裤装露出腿线', avoid:'紧身打底、明显腰带、横条纹上衣', formula:'V领/深色垂感上衣 + 直筒裤' },
+    'H型（肩腰臀接近）': { tip:'制造肩宽与层次感，避免过于平直', do:'肩部有结构感的外套、立领、层次叠穿', avoid:'完全直筒、无结构的外套', formula:'有肩线结构上衣 + 略收口下装' },
+    '倒三角（肩宽臀窄）': { tip:'弱化肩部，增加下半身体量', do:'深色上衣、V领/圆领、直筒/略宽松裤型', avoid:'垫肩、大落肩、紧身裤', formula:'深色简洁上衣 + 直筒或略宽松裤' }
+  };
+
+  const LEG_ADVICE_M = {
+    '标准腿（能并拢）': { tip:'基本无限制，各种裤型都友好', do:'直筒裤、锥形裤、修身裤、短裤都可', avoid:'基本无雷区' },
+    'O型腿（膝盖并拢脚踝分开）': { tip:'避免紧贴腿部，选有量感的裤型', do:'直筒裤、阔腿裤、工装裤、休闲长裤', avoid:'紧身裤、修身牛仔裤、超短裤' },
+    'X型腿（膝盖分开脚踝并拢）': { tip:'遮膝盖，裤脚可收', do:'直筒裤、锥形裤、休闲长裤', avoid:'紧身裤、超短裤' },
+    'XO型腿（大腿间有空隙）': { tip:'避免凸显大腿，选宽松下装', do:'阔腿裤、直筒裤、工装裤、休闲裤', avoid:'紧身牛仔裤' }
+  };
+
+  const SHOULDER_ADVICE_M = {
+    '窄肩': { tip:'增加肩部视觉宽度，平衡比例', do:'有肩线设计/略硬挺的外套、浅色上衣、横条纹', avoid:'过窄肩线、深色紧身上衣' },
+    '标准肩': { tip:'基本百搭，各种剪裁都能驾驭', do:'任何肩型设计都可尝试', avoid:'基本无雷区' },
+    '宽肩': { tip:'弱化肩宽，视线下移', do:'V领、插肩袖、落肩袖、深色上衣', avoid:'垫肩、硬挺宽肩、浅色横条纹上衣' }
+  };
+
+  const SKIN_COLORS = {
+    '暖皮（偏黄）': { colors:['焦糖','酒红','姜黄','砖红','军绿','卡其'], avoid:['荧光色','冷调的荧光蓝/荧光绿','某些浅粉'] },
+    '冷皮（偏白偏粉）': { colors:['雾霾蓝','玫粉','紫罗兰','薄荷绿','藏青','米白'], avoid:['土黄','焦糖','某些偏黄的大地色'] },
+    '中性皮（介于两者）': { colors:['莫兰迪色系','燕麦','豆沙','灰蓝','杏色','奶咖'], avoid:['基本都能驾驭，避开过饱和荧光色'] }
+  };
+
+  const STYLE_DESC = {
+    '清冷风': { dress:'低饱和、克制的极简款，剪裁利落，松紧有度', makeup:'清透底妆+淡眉+豆沙唇，眼妆点到为止', key:'「克制感」最重要，宁少勿多', star:'刘诗诗、桂纶镁',
+      keywords:['清冷','高级感','疏离感'],
+      looks:['雾霾蓝衬衫 + 米白阔腿裤 + 尖头单鞋','燕麦色针织 + 灰蓝直筒半裙 + 小白鞋','黑色极简西装外套 + 白T + 烟管裤'] },
+    '甜酷风': { dress:'甜与硬朗单品混搭，如纱裙+马丁靴、卫衣+短裙', makeup:'猫眼线或亮片点缀+裸唇，甜中带锋芒', key:'反差感是灵魂', star:'宋雨琦、欧阳娜娜',
+      keywords:['甜酷','反差','个性'],
+      looks:['蕾丝纱裙 + 马丁靴 + 短款皮衣','oversize卫衣 + 百褶短裙 + 厚底鞋','碎花吊带裙 + 牛仔外套 + 马丁靴'] },
+    '古典风': { dress:'盘扣、立领、改良旗袍、汉元素，收腰显形', makeup:'温婉弯眉+眼线偏淡+正红/豆沙唇', key:'韵味与线条感', star:'刘亦菲、刘诗诗',
+      keywords:['古典','韵味','东方'],
+      looks:['改良旗袍裙 + 珍珠耳饰 + 低跟绑带鞋','盘扣立领上衣 + 马面裙/直筒裙','汉元素长裙 + 流苏配饰 + 细带凉鞋'] },
+    '少年感': { dress:'oversize、棒球服、牛仔、工装，宽松舒适', makeup:'几乎素颜或淡妆，清透自然', key:'清爽干净，避免浓艳', star:'周冬雨、郭采洁',
+      keywords:['少年感','清爽','活力'],
+      looks:['棒球服 + 白色卫衣 + 直筒牛仔裤','oversize衬衫 + 工装裤 + 帆布鞋','牛仔外套 + 白T + 短裤 + 板鞋'] },
+    '温柔系': { dress:'针织、莫兰迪色、碎花、飘带，软糯亲和', makeup:'奶油肌+蜜桃腮红+水光唇', key:'亲和力与柔光感', star:'谭松韵、毛晓彤',
+      keywords:['温柔','亲和','软糯'],
+      looks:['奶油色针织 + 碎花半裙 + 玛丽珍鞋','莫兰迪色连衣裙 + 开衫 + 芭蕾鞋','豆沙色毛衣 + 米色阔腿裤 + 乐福鞋'] },
+    '慵懒风': { dress:'宽松针织、阔腿裤、oversize衬衫，舒适为主', makeup:'伪素颜+自然野生眉+透亮唇', key:'松弛感，不刻意', star:'刘雯、宋佳',
+      keywords:['慵懒','松弛','随性'],
+      looks:['oversize针织 + 阔腿裤 + 穆勒鞋','宽松衬衫 + 直筒牛仔裤 + 帆布鞋','长款针织开衫 + 吊带 + 拖地裤'] },
+    '成熟知性': { dress:'真丝、西装、半裙、衬衫，质感优先', makeup:'立体眉+大地色眼影+丝绒唇', key:'剪裁与面料质感', star:'俞飞鸿、高圆圆',
+      keywords:['知性','质感','利落'],
+      looks:['真丝衬衫 + 高腰西裤 + 尖头高跟鞋','西装外套 + 缎面半裙 + 乐福鞋','衬衫裙 + 腰带 + 浅口单鞋'] },
+    '元气风': { dress:'亮色卫衣、百褶裙、背带裤、运动风', makeup:'水光肌+橙系腮红+果冻唇', key:'活力与笑容感', star:'欧阳娜娜、赖美云',
+      keywords:['元气','活力','明媚'],
+      looks:['亮色卫衣 + 百褶裙 + 帆布鞋','背带裤 + 条纹T + 板鞋','运动套装 + 白色球鞋'] }
+  };
+
+  // 男性版：穿搭建议 + 发型/护肤建议（妆容栏替换）
+  const STYLE_DESC_M = {
+    '清冷风': { dress:'低饱和色系、利落剪裁、极简基础款，突出干净与疏离感', groom:'发膜保养+自然眉型+清爽无妆感（基础护肤即可）', key:'克制与简洁，质感大于花哨', star:'刘昊然、易烊千玺',
+      keywords:['清冷','利落','克制'],
+      looks:['灰蓝衬衫 + 深色直筒西裤 + 切尔西靴','米白针织衫 + 深灰休闲裤 + 小白鞋','黑色短款外套 + 白T + 直筒牛仔裤'] },
+    '甜酷风': { dress:'运动与潮流混搭，卫衣+工装、棒球服+束脚裤，带造型感', groom:'清爽短发+眉形打理+可选项链/耳钉点缀', key:'运动感与潮流元素结合', star:'王一博、王俊凯',
+      keywords:['潮流','运动','个性'],
+      looks:['oversize连帽卫衣 + 工装束脚裤 + 板鞋','棒球服 + 白T + 直筒牛仔裤','黑色皮衣 + 卫衣 + 破洞牛仔裤'] },
+    '古典风': { dress:'中山装、盘扣、新中式衬衫、立领，突出温润儒雅', groom:'清爽偏分或背头+干净眉型+哑光肤感', key:'东方儒雅与线条感', star:'肖战、陈坤',
+      keywords:['儒雅','中式','温润'],
+      looks:['立领新中式衬衫 + 黑色西裤','盘扣上衣 + 素色长裤 + 布鞋','改良中长外套 + 高领内搭'] },
+    '少年感': { dress:'oversize、棒球服、牛仔、工装、运动风，宽松舒适', groom:'干净短发或刘海+基础护肤保持清爽', key:'清爽干净，避免油腻', star:'刘昊然、吴磊',
+      keywords:['少年感','清爽','活力'],
+      looks:['棒球服 + 白色卫衣 + 直筒牛仔裤','oversize衬衫 + 工装裤 + 帆布鞋','牛仔外套 + 白T + 短裤 + 板鞋'] },
+    '温柔系': { dress:'针织、莫兰迪色、素色衬衫、羊毛开衫，软糯亲和', groom:'自然眉型+保湿护肤+可选圆框眼镜', key:'亲和力与温柔感', star:'杨洋、白敬亭',
+      keywords:['温柔','亲和','暖男'],
+      looks:['奶油色针织衫 + 米白休闲裤 + 帆布鞋','素色衬衫 + 卡其休闲裤 + 乐福鞋','羊毛开衫 + 白T + 直筒裤'] },
+    '慵懒风': { dress:'宽松针织、阔腿裤、oversize连帽衫、舒适为主', groom:'自然凌乱感发型+基础清洁护肤', key:'松弛感，不刻意', star:'朱一龙、秦昊',
+      keywords:['慵懒','松弛','随性'],
+      looks:['oversize针织 + 阔腿裤 + 运动鞋','宽松连帽衫 + 直筒牛仔裤 + 帆布鞋','长款针织开衫 + 白T + 束脚裤'] },
+    '成熟知性': { dress:'西装、衬衫、半高领、羊毛大衣，质感与剪裁优先', groom:'利落短发或背头+眉型打理+清爽低油光', key:'剪裁与面料质感', star:'胡歌、张震',
+      keywords:['成熟','质感','利落'],
+      looks:['西装外套 + 衬衫 + 西裤 + 皮鞋','羊毛大衣 + 高领衫 + 休闲裤','衬衫 + 羊毛衫叠穿 + 直筒裤'] },
+    '元气风': { dress:'亮色卫衣、运动外套、条纹T、棒球服，活力运动', groom:'清爽短发+防晒+清爽护肤', key:'活力与运动感', star:'吴磊、丁程鑫',
+      keywords:['元气','活力','运动'],
+      looks:['亮色卫衣 + 运动裤 + 球鞋','条纹T + 休闲短裤 + 板鞋','运动套装 + 白色球鞋'] }
+  };
+
+  function chips(id, arr, multi) {
+    const el = document.getElementById(id);
+    arr.forEach(v => {
+      const c = document.createElement('div');
+      c.className = 'chip';
+      c.textContent = v;
+      c.onclick = () => {
+        if (multi) {
+          c.classList.toggle('on');
+        } else {
+          el.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+          c.classList.add('on');
+        }
+      };
+      el.appendChild(c);
+    });
+  }
+  chips('gender', DATA.gender, false);
+  chips('face', DATA.face, false);
+  chips('body', DATA.body, false);
+  chips('leg', DATA.leg, false);
+  chips('shoulder', DATA.shoulder, false);
+  chips('skin', DATA.skin, false);
+  chips('style', DATA.style, true);
+  chips('scene', DATA.scene, true);
+
+  function picked(id) {
+    return [...document.getElementById(id).querySelectorAll('.chip.on')].map(c => c.textContent);
+  }
+
+  function go() {
+    const gender = picked('gender')[0];
+    const h = parseFloat(document.getElementById('height').value);
+    const w = parseFloat(document.getElementById('weight').value);
+    const face = picked('face')[0];
+    const body = picked('body')[0];
+    const leg = picked('leg')[0];
+    const shoulder = picked('shoulder')[0];
+    const skin = picked('skin')[0];
+    const styles = picked('style');
+    const scenes = picked('scene');
+
+    if (!gender || !h || !w || !face || !body || !leg || !shoulder || !skin || !styles.length) {
+      alert('请先选择性别，并填完身高体重，选择脸型、身型、腿型、肩型、肤色和至少一个风格方向');
+      return;
+    }
+
+    const isM = gender === '男性';
+    const bmi = w / ((h/100) ** 2);
+    const bmiTxt = bmi < 18.5 ? '偏瘦' : bmi < 24 ? '标准' : bmi < 28 ? '偏丰满' : '丰满';
+    const fa = FACE_ADVICE[face];
+    const ba = isM ? BODY_ADVICE_M[body] : BODY_ADVICE[body];
+    const la = isM ? LEG_ADVICE_M[leg] : LEG_ADVICE[leg];
+    const sa = isM ? SHOULDER_ADVICE_M[shoulder] : SHOULDER_ADVICE[shoulder];
+    const sc = SKIN_COLORS[skin];
+    const styleTxt = styles.map(s => `<span class="badge">${s}</span>`).join(' ');
+
+    // 按性别选择风格数据源
+    const styleSrc = isM ? STYLE_DESC_M : STYLE_DESC;
+    const main = styleSrc[styles[0]];
+    const sub = styles.slice(1);
+    const keywords = main.keywords;
+    const looks = main.looks;
+    // 参考明星：男性用男星，女性用脸型字典里的女星
+    const styleStar = main.star;
+    const faceStar = isM ? FACE_STAR_M[face] : fa.star;
+
+    document.getElementById('form').classList.add('hidden');
+    const r = document.getElementById('result');
+    r.classList.remove('hidden');
+
+    r.innerHTML = `
+      <div class="r-head">
+        <div class="r-title">你的专属形象分析</div>
+        <div class="r-tag">${bodyTypeLine(bmi)} · ${face} · ${skin}</div>
+      </div>
+
+      <div class="sec">
+        <h3>📐 你的体型画像</h3>
+        <p>BMI ${bmi.toFixed(1)}（${bmiTxt}）· 身型：${body.split('（')[0]} · 腿型：${leg.split('（')[0]} · 肩型：${shoulder}</p>
+        <p style="margin-top:6px"><b>核心思路</b>：${bodyAdvice(bmi, ba.tip)}</p>
+      </div>
+
+      <div class="sec">
+        <h3>🎨 你的专属色系（${skin}）</h3>
+        <p class="do">✓ 适合：${sc.colors.join(' · ')}</p>
+        <p class="dont" style="margin-top:4px">✗ 避开：${sc.avoid}</p>
+      </div>
+
+      <div class="sec">
+        <h3>👗 穿搭核心方案</h3>
+        <p>风格方向：${styleTxt}</p>
+        <p style="margin-top:8px"><b>主风格「${styles[0]}」</b>：${main.dress}</p>
+        <p style="margin-top:4px">关键法则：${main.key}</p>
+        ${sub.map(s => `<p style="margin-top:4px">参考「${s}」：${styleSrc[s].dress}</p>`).join('')}
+        <p style="margin-top:10px"><b>你的气质关键词</b>：${keywords.map(k => `<span class="badge">${k}</span>`).join(' ')}</p>
+      </div>
+
+      <div id="lockArea"></div>
+
+      <button class="restart" onclick="location.reload()">重新测试</button>
+      <div class="share-tip">✨ 截图保存你的专属形象方案，分享给朋友一起测</div>
+      <div class="disclaimer">本结果由交互规则生成 · 仅供娱乐参考 · 不构成任何专业医疗或形象建议</div>
+    `;
+
+    // 锁定部分完整内容（付费解锁后显示）
+    const lockedHTML = `
+      <div class="sec">
+        <h3>🧥 你的 3 套完整搭配（可直接照穿）</h3>
+        <ul>${looks.map(l => `<li>${l}</li>`).join('')}</ul>
+      </div>
+
+      <div class="sec">
+        <h3>📏 你的黄金比例参考（身高 ${h}cm）</h3>
+        ${goldenRatio(h)}
+      </div>
+
+      <div class="sec">
+        <h3>✅ 适合你的穿法</h3>
+        <div class="box good"><b>身型建议</b><br>${ba.do}</div>
+        <div class="box good"><b>腿型建议</b><br>${la.do}</div>
+        <div class="box good"><b>肩型建议</b><br>${sa.do}</div>
+        <div class="formula">穿搭公式：${ba.formula}</div>
+      </div>
+
+      <div class="sec">
+        <h3>🚫 避雷清单</h3>
+        <div class="box bad"><b>身型</b><br>${ba.avoid}</div>
+        <div class="box bad"><b>腿型</b><br>${la.avoid}</div>
+        <div class="box bad"><b>肩型</b><br>${sa.avoid}</div>
+        <div class="box bad"><b>脸型·领口</b><br>${fa.collarAvoid}</div>
+      </div>
+
+      <div class="sec">
+        <h3>${isM ? '🪒 发型 & 护肤建议' : '💄 妆容建议'}</h3>
+        ${isM
+          ? `<p>${main.groom}</p>`
+          : `<p><b>眉型</b>：${fa.eyebrow}</p><p><b>整体妆容</b>：${main.makeup}</p>`}
+      </div>
+
+      <div class="sec">
+        <h3>💇 发型 & 配饰（${face}）</h3>
+        <p><b>发型建议</b>：${fa.hair}</p>
+        <p><b>领型</b>：${fa.collar}</p>
+        ${isM ? '' : `<p><b>耳饰</b>：${fa.ear}</p>`}
+      </div>
+
+      <div class="sec">
+        <h3>🌟 风格参考</h3>
+        <p>与你脸型相近的气质范本：${faceStar}</p>
+        <p style="margin-top:4px">「${styles[0]}」风格参考：${styleStar}</p>
+      </div>
+
+      <div class="sec">
+        <h3>📌 场合穿搭速查</h3>
+        <ul>${scenes.map(scn => `<li>${sceneAdvice(scn, bmi)}</li>`).join('')}</ul>
+      </div>
+    `;
+
+    // 锁定遮罩
+    const lockArea = document.getElementById('lockArea');
+    lockArea.innerHTML = `
+      <div class="lock-mask">
+        <div class="lock-icon">🔒</div>
+        <div class="lock-t1">以上为免费预览，解锁查看完整方案</div>
+        <div class="lock-t2">包含你的 3 套完整穿搭、避雷清单、黄金比例、妆容/护肤建议、参考明星等</div>
+        <input type="text" id="unlockInput" placeholder="输入解锁码">
+        <div>
+          <button class="unlock-btn" onclick="tryUnlock()">立即解锁</button>
+        </div>
+        <div class="locked-note">私信获取解锁码</div>
+      </div>
+    `;
+    // 把完整内容存到全局，解锁时填入
+    window.__lockedHTML = lockedHTML;
+  }
+
+  function tryUnlock() {
+    const inp = document.getElementById('unlockInput');
+    const area = document.getElementById('lockArea');
+    if (!inp || !area) return;
+    const v = inp.value.trim().toUpperCase();
+    if (v === UNLOCK_CODE) {
+      area.innerHTML = window.__lockedHTML || '';
+      area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      alert('解锁码不正确，请检查后重试');
+    }
+  }
+
+  function bodyTypeLine(bmi) {
+    if (bmi < 18.5) return '纤细型';
+    if (bmi < 24) return '标准型';
+    if (bmi < 28) return '圆润型';
+    return '丰满型';
+  }
+  function bodyAdvice(bmi, bodyTip) {
+    const byBmi =
+      bmi < 18.5 ? '偏瘦，需增加体量感避免单薄' :
+      bmi < 24 ? '标准，可塑性最强' :
+      bmi < 28 ? '偏丰满，注意扬长避短与平衡' :
+      '丰满，重点营造轮廓感';
+    return bodyTip + '；结合体重状态：' + byBmi + '。';
+  }
+  function goldenRatio(h) {
+    // 按身高给衣长/裙长/裤长参考（单位 cm，供参考）
+    const coat = Math.round(h * 0.49);   // 及胯上短外套
+    const dress = Math.round(h * 0.55);  // 及膝裙长约
+    const midi = Math.round(h * 0.72);   // 中长裙
+    const long = Math.round(h * 0.92);   // 长裙/拖地裤
+    const crop = Math.round(h * 0.42);   // 短上衣
+    return `<div class="box good">
+      <b>显高小贴士</b><br>
+      短上衣/短外套约 ${crop}cm（及腰上）<br>
+      及膝裙约 ${dress}cm · 中长裙约 ${midi}cm · 长裙/拖地裤约 ${long}cm<br>
+      高腰线 + 露脚踝是通用显高公式
+    </div>`;
+  }
+  function sceneAdvice(sc, bmi) {
+    const fat = bmi >= 24;
+    switch (sc) {
+      case '通勤上班': return fat ? '高腰直筒裤+垂感V领衬衫，深色系最稳' : '利落衬衫+高腰西裤或半裙，质感优先';
+      case '约会': return fat ? '收腰连衣裙+外搭开衫，V领显瘦' : '温柔系连衣裙或针织套装，扬长避短';
+      case '日常休闲': return '基础款+高腰线，舒适与比例兼顾';
+      case '逛街拍照': return '有轮廓感的单品+亮色点缀，上镜显气色';
+      case '正式场合': return fat ? '挺括西装/收腰礼服，深色最稳' : '质感礼服或西装裙，剪裁决定气质';
+    }
+    return '';
+  }
+</script>
+</body>
+</html>
